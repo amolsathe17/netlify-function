@@ -51,7 +51,7 @@ const Admin = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://localhost:5000/subscribers", {
+      const res = await fetch("https://go-dady.onrender.com/subscribers", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -70,7 +70,7 @@ const Admin = () => {
 
   const fetchContacts = async () => {
     try {
-      const res = await fetch("http://localhost:5000/contacts", {
+      const res = await fetch("https://go-dady.onrender.com/contacts", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -92,7 +92,7 @@ const Admin = () => {
 
   const fetchTemplates = async () => {
     try {
-      const res = await fetch("http://localhost:5000/templates", {
+      const res = await fetch("https://go-dady.onrender.com/templates", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -119,7 +119,7 @@ const Admin = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete subscriber?")) return;
 
-    await fetch(`http://localhost:5000/delete/${id}`, {
+    await fetch(`https://go-dady.onrender.com/delete/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -130,7 +130,7 @@ const Admin = () => {
   const deleteContact = async (id) => {
     if (!window.confirm("Delete message?")) return;
 
-    await fetch(`http://localhost:5000/contact/${id}`, {
+    await fetch(`https://go-dady.onrender.com/contact/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -139,7 +139,7 @@ const Admin = () => {
   };
 
   const toggleImportant = async (id) => {
-    await fetch(`http://localhost:5000/contact/important/${id}`, {
+    await fetch(`https://go-dady.onrender.com/contact/important/${id}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -148,7 +148,7 @@ const Admin = () => {
   };
 
   const markReplied = async (id) => {
-    await fetch(`http://localhost:5000/contact/replied/${id}`, {
+    await fetch(`https://go-dady.onrender.com/contact/replied/${id}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -161,7 +161,7 @@ const Admin = () => {
 
     setLoading(true);
 
-    await fetch("http://localhost:5000/send-template", {
+    await fetch("https://go-dady.onrender.com/send-template", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -176,7 +176,7 @@ const Admin = () => {
 
   const handleExport = async () => {
     try {
-      const res = await fetch("http://localhost:5000/export", {
+      const res = await fetch("https://go-dady.onrender.com/export", {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -202,7 +202,7 @@ const Admin = () => {
   const sendReply = async () => {
     if (!replyMessage) return showModal("Write message", "error");
 
-    await fetch("http://localhost:5000/reply", {
+    await fetch("https://go-dady.onrender.com/reply", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

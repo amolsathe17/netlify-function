@@ -24,7 +24,9 @@ app.use(
   })
 );
 
-app.use(cors());
+app.use(cors({
+  origin: ["https://pumpkinpicturesllp.uk"]
+}));
 app.use(express.json());
 
 /* ================= ENV CHECK ================= */
