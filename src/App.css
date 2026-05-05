@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #f97316; /* Orange */
+  --color-secondary: #22c55e; /* Green */
+  --color-background: #1f2937; /* Dark Gray */
+  --color-text: #f3f4f6; /* Light Gray */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.animate-bounce-slow {
+  animation: bounce-slow 0.5s ease-in-out;
+}
+
+@layer components {
+  .btn {
+    @apply inline-block font-medium text-center transition duration-150 ease-in-out border border-transparent rounded cursor-pointer;
+  }
+  
+  .btn-primary {
+    @apply bg-linear-to-r from-blue-400 to-orange-400 text-black py-1 px-1 rounded-xl shadow-lg hover:scale-105 transition-transform  ;
+  }
+  
+  .btn-secondary {
+    @apply text-white bg-gray-600 hover:bg-gray-700 py-2 px-2 active:bg-gray-800;
+  }
+
+    .btn-lightblue {
+    @apply text-white bg-blue-300 hover:bg-blue-700 active:bg-blue-400;
+  }
+}
