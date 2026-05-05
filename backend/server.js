@@ -24,15 +24,38 @@ app.use(
   })
 );
 
-app.use(cors({
-  origin: ["https://amolsathe-react.netlify.app/"]
-}));
-app.use(express.json());
+/* ================= ✅ FIXED CORS ================= */
+app.use(
+  cors({
+    origin: "https://amolsathe-react.netlify.app", // ❌ removed trailing /
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-/* ================= ENV CHECK ================= */
-if (!process.env.JWT_SECRET) {
-  console.log("❌ JWT_SECRET missing in .env");
-}
+/* ✅ IMPORTANT: HANDLE PREFLIGHT */
+app.use((req, res, next) => {
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://amolsathe-react.netlify.app"
+  );
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
+app.use(express.json());
 
 /* ================= DATABASE ================= */
 mongoose
@@ -71,21 +94,20 @@ app.post("/admin/login", (req, res) => {
   }
 });
 
-/* ================= AUTH MIDDLEWARE ================= */
+/* ================= AUTH ================= */
 const verifyAdmin = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    return res.status(403).json({ message: "No token" });
+    return res.status(401).json({ message: "No token" });
   }
 
-  const token = authHeader.split(" ")[1];
-
   try {
+    const token = authHeader.split(" ")[1];
     jwt.verify(token, process.env.JWT_SECRET);
     next();
-  } catch (err) {
-    return res.status(403).json({ message: "Invalid token" });
+  } catch {
+    return res.status(401).json({ message: "Invalid token" });
   }
 };
 
@@ -94,11 +116,10 @@ app.post("/subscribe", async (req, res) => {
   try {
     const { email } = req.body;
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) return res.json({ message: "Enter valid email" });
 
-    if (!email || !emailRegex.test(email)) {
-      return res.json({ message: "Enter valid email" });
-    }
+    const exists = await Subscriber.findOne({ email });
+    if (exists) return res.json({ message: "Email already exists" });
 
     const newUser = new Subscriber({ email });
     await newUser.save();
@@ -111,28 +132,19 @@ app.post("/subscribe", async (req, res) => {
     });
 
     res.json({ message: "Subscribed & Email Sent" });
-
   } catch (err) {
-    if (err.code === 11000) {
-      return res.json({ message: "Email already exists" });
-    }
     console.log(err);
     res.json({ message: "Error" });
   }
 });
 
-/* ================= CONTACT FORM ================= */
+/* ================= CONTACT ================= */
 app.post("/contact", async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
 
     if (!name || !email || !phone || !message) {
       return res.status(400).json({ message: "All fields required" });
-    }
-
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(phone)) {
-      return res.status(400).json({ message: "Invalid phone" });
     }
 
     const newContact = new Contact({
@@ -144,219 +156,102 @@ app.post("/contact", async (req, res) => {
 
     await newContact.save();
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER,
-      subject: "📩 new inquiry",
-      html: `
-        <h2>new inquiry</h2>
-        <p><b>Name:</b> ${name}</p>
-        <p><b>Email:</b> ${email}</p>
-        <p><b>Phone:</b> ${phone}</p>
-        <p><b>Message:</b> ${message}</p>
-      `,
-    });
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "✅ We received your message",
-      html: `
-        <h2>Hi ${name},</h2>
-        <p>Thank you for contacting us.</p>
-        <p>We will respond shortly.</p>
-        <br/>
-        <p>Regards,<br/>Team</p>
-      `,
-    });
-
     res.json({ message: "Message sent successfully" });
-
   } catch (err) {
-    console.log(err);
     res.status(500).json({ message: "Contact error" });
   }
 });
 
 /* ================= GET CONTACTS ================= */
 app.get("/contacts", verifyAdmin, async (req, res) => {
-  try {
-    const contacts = await Contact.find().sort({ createdAt: -1 });
-    res.json(contacts);
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching contacts" });
-  }
+  const contacts = await Contact.find().sort({ createdAt: -1 });
+  res.json(contacts);
 });
 
-/* ================= 🔥 FIX ADDED: DELETE CONTACT ================= */
+/* ================= DELETE CONTACT ================= */
 app.delete("/contact/:id", verifyAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const deleted = await Contact.findByIdAndDelete(id);
-
-    if (!deleted) {
-      return res.status(404).json({
-        message: "Contact not found",
-      });
-    }
-
-    return res.json({
-      message: "Contact deleted successfully",
-    });
-
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({
-      message: "Error deleting contact",
-    });
-  }
+  await Contact.findByIdAndDelete(req.params.id);
+  res.json({ message: "Deleted" });
 });
 
 /* ================= GET SUBSCRIBERS ================= */
 app.get("/subscribers", verifyAdmin, async (req, res) => {
-  try {
-    const users = await Subscriber.find().sort({ createdAt: -1 });
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching users" });
-  }
+  const users = await Subscriber.find().sort({ createdAt: -1 });
+  res.json(users);
 });
 
 /* ================= DELETE SUBSCRIBER ================= */
 app.delete("/delete/:id", verifyAdmin, async (req, res) => {
-  try {
-    await Subscriber.findByIdAndDelete(req.params.id);
-    res.json({ message: "Deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ message: "Delete error" });
-  }
+  await Subscriber.findByIdAndDelete(req.params.id);
+  res.json({ message: "Deleted successfully" });
 });
 
 /* ================= EXPORT ================= */
 app.get("/export", verifyAdmin, async (req, res) => {
-  try {
-    const users = await Subscriber.find();
+  const users = await Subscriber.find();
 
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Subscribers");
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet("Subscribers");
 
-    worksheet.columns = [{ header: "Email", key: "email", width: 30 }];
+  sheet.columns = [{ header: "Email", key: "email", width: 30 }];
+  users.forEach((u) => sheet.addRow({ email: u.email }));
 
-    users.forEach((u) => worksheet.addRow({ email: u.email }));
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=subscribers.xlsx"
+  );
 
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=subscribers.xlsx"
-    );
-
-    await workbook.xlsx.write(res);
-    res.end();
-
-  } catch (err) {
-    res.status(500).send("Export failed");
-  }
+  await workbook.xlsx.write(res);
+  res.end();
 });
 
-/* ================= LIST TEMPLATES ================= */
+/* ================= TEMPLATES ================= */
 app.get("/templates", verifyAdmin, (req, res) => {
-  try {
-    const files = fs.readdirSync(path.join(__dirname, "templates"));
+  const files = fs.readdirSync(path.join(__dirname, "templates"));
 
-    const templates = files
-      .filter((file) => file.endsWith(".js"))
-      .map((file) => file.replace(".js", ""));
+  const templates = files
+    .filter((file) => file.endsWith(".js"))
+    .map((file) => file.replace(".js", ""));
 
-    res.json(templates);
-
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Error loading templates" });
-  }
+  res.json(templates);
 });
 
 /* ================= SEND TEMPLATE ================= */
 app.post("/send-template", verifyAdmin, async (req, res) => {
-  try {
-    const { templateName } = req.body;
+  const { templateName } = req.body;
 
-    if (!templateName) {
-      return res.status(400).json({ message: "Template required" });
-    }
+  const template = require(`./templates/${templateName}`);
+  const users = await Subscriber.find();
 
-    const template = require(`./templates/${templateName}`);
-    const users = await Subscriber.find();
-
-    for (let user of users) {
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: user.email,
-        subject: "🔥 Newsletter",
-        html: template(user.email),
-      });
-    }
-
-    res.json({ message: "Template sent successfully ✅" });
-
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Error sending template" });
-  }
-});
-
-/* ================= DEFAULT OFFER ================= */
-app.get("/send-offer", verifyAdmin, async (req, res) => {
-  try {
-    const users = await Subscriber.find();
-
-    for (let user of users) {
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: user.email,
-        subject: "🔥 Travel Offer",
-        html: offerEmailTemplate(user.email),
-      });
-    }
-
-    res.send("Emails sent successfully ✅");
-
-  } catch (err) {
-    console.log(err);
-    res.status(500).send("Error sending emails ❌");
-  }
-});
-
-/* ================= REPLY TO CONTACT ================= */
-app.post("/reply", async (req, res) => {
-  try {
-    const { email, message } = req.body;
-
-    if (!email || !message) {
-      return res.status(400).json({ message: "Missing fields" });
-    }
-
+  for (let user of users) {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Reply from Support Team",
-      html: `
-        <p>${message}</p>
-        <br/>
-        <p>Regards,<br/>Team</p>
-      `,
+      to: user.email,
+      subject: "🔥 Newsletter",
+      html: template(user.email),
     });
-
-    res.json({ message: "Reply sent successfully" });
-
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Reply error" });
   }
+
+  res.json({ message: "Template sent successfully ✅" });
+});
+
+/* ================= REPLY ================= */
+app.post("/reply", async (req, res) => {
+  const { email, message } = req.body;
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Reply from Support Team",
+    html: `<p>${message}</p>`,
+  });
+
+  res.json({ message: "Reply sent successfully" });
 });
 
 /* ================= HOME ================= */
@@ -364,7 +259,7 @@ app.get("/", (req, res) => {
   res.send("Backend running 🚀");
 });
 
-/* ================= START SERVER ================= */
+/* ================= START ================= */
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
