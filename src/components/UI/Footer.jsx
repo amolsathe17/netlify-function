@@ -41,7 +41,7 @@ export const Footers = () => {
     try {
       setLoading(true);
 
-      const res = await fetch("https://go-dady.onrender.com/subscribe", {
+      const res = await fetch("https://travel-netlify.onrender.com/subscribe", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

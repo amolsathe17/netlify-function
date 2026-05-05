@@ -52,7 +52,7 @@ export const Contact = () => {
 
     setLoading(true);
 
-    fetch("https://go-dady.onrender.com/contact", {
+    fetch("https://travel-netlify.onrender.com/contact", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
