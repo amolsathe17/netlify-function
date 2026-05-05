@@ -25,7 +25,7 @@ app.use(
 );
 
 app.use(cors({
-  origin: ["https://pumpkinpicturesllp.uk"]
+  origin: ["https://amolsathe-react.netlify.app"]
 }));
 app.use(express.json());
 
