@@ -37,7 +37,7 @@ app.use(
 );
 
 // IMPORTANT for Netlify
-app.options("*", cors());
+app.options("/*", cors());
 
 app.use(express.json());
 
