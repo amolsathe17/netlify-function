@@ -1,40 +1,44 @@
 // netlify/functions/templates.js
 
+const fs = require("fs");
+const path = require("path");
+
 exports.handler = async () => {
   try {
-    // 🔴 IMPORTANT: replace with your real domain
-    const BASE_URL = "https://amolsathe-function.netlify.app"; 
+    // ✅ Correct path for Netlify
+    const templatesDir = path.join(__dirname, "../../public/templates");
 
-    // 👉 List your template files here
-    const templateFiles = [
-      "offer.html",
-      "offer1.html"
-    ];
+    console.log("Reading templates from:", templatesDir);
 
-    const validTemplates = [];
-
-    // ✅ Check which templates actually exist
-    for (let file of templateFiles) {
-      try {
-        const res = await fetch(`${BASE_URL}/templates/${file}`);
-        if (res.ok) {
-          validTemplates.push(file);
-        }
-      } catch (err) {
-        console.log("Error checking file:", file);
-      }
+    // If folder missing → return empty array (NOT error)
+    if (!fs.existsSync(templatesDir)) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify([]),
+      };
     }
+
+    // Read all files
+    const files = fs.readdirSync(templatesDir);
+
+    // Filter only HTML files
+    const htmlFiles = files.filter((file) =>
+      file.toLowerCase().endsWith(".html")
+    );
+
+    // Optional: sort alphabetically
+    htmlFiles.sort();
 
     return {
       statusCode: 200,
-      body: JSON.stringify(validTemplates),
+      body: JSON.stringify(htmlFiles), // ✅ ALWAYS array
     };
 
   } catch (err) {
     console.error("TEMPLATES ERROR:", err);
 
     return {
-      statusCode: 200,
+      statusCode: 200, // ✅ still return array to prevent frontend crash
       body: JSON.stringify([]),
     };
   }
