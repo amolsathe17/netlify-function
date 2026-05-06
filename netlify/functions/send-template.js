@@ -1,5 +1,5 @@
-
 const nodemailer = require("nodemailer");
+const fetch = require("node-fetch"); // ✅ required for Netlify
 
 exports.handler = async (event) => {
   try {
@@ -13,12 +13,16 @@ exports.handler = async (event) => {
     }
 
     // 🔴 IMPORTANT: Replace with your domain
-    const BASE_URL = "https://amolsathe-function.netlify.app/";
+    const BASE_URL = "https://amolsathe-function.netlify.app";
 
     // ✅ Fetch HTML template from public folder
-    const htmlContent = await fetch(
-      `${BASE_URL}/templates/${templateName}`
-    ).then((res) => res.text());
+    const response = await fetch(`${BASE_URL}/templates/${templateName}`);
+
+    if (!response.ok) {
+      throw new Error("Template not found or failed to load");
+    }
+
+    const htmlContent = await response.text();
 
     // ✅ Gmail transporter
     const transporter = nodemailer.createTransport({
@@ -29,16 +33,25 @@ exports.handler = async (event) => {
       },
     });
 
+    // ✅ Verify transporter connection
+    await transporter.verify();
+
     // 🚀 Send emails
     for (let user of subscribers) {
       if (!user.email) continue;
 
-      await transporter.sendMail({
-        from: `"Travel Offers ✈️" <${process.env.EMAIL_USER}>`,
-        to: user.email,
-        subject: "Exclusive Travel Offer 🌍",
-        html: htmlContent,
-      });
+      try {
+        await transporter.sendMail({
+          from: `"Travel Offers ✈️" <${process.env.EMAIL_USER}>`,
+          to: user.email,
+          subject: "Exclusive Travel Offer 🌍",
+          html: htmlContent,
+        });
+
+        console.log("Email sent to:", user.email);
+      } catch (mailErr) {
+        console.error("Error sending to:", user.email, mailErr);
+      }
     }
 
     return {

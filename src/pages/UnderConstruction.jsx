@@ -39,7 +39,7 @@ export default function UnderConstruction() {
           transition={{ delay: 0.2 }}
           className="text-3xl md:text-5xl font-bold tracking-tight"
         >
-          We’re Under Construction
+          Under Construction
         </motion.h1>
 
         {/* Description */}
