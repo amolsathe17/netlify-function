@@ -31,7 +31,6 @@ const Admin = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(5);
 
-  // ✅ MODAL STATE
   const [modal, setModal] = useState({
     show: false,
     message: "",
@@ -49,6 +48,9 @@ const Admin = () => {
     if (!token) navigate("/login");
   }, []);
 
+  // =========================
+  // FETCH USERS
+  // =========================
   const fetchUsers = async () => {
     try {
       const res = await fetch("/.netlify/functions/subscribers", {
@@ -62,34 +64,42 @@ const Admin = () => {
       }
 
       const data = await res.json();
-      setUsers(data);
+      setUsers(Array.isArray(data) ? data : []);
     } catch {
       showModal("Backend not running", "error");
     }
   };
 
+  // =========================
+  // FETCH CONTACTS
+  // =========================
   const fetchContacts = async () => {
     try {
-      const res = await fetch("/.netlify/functions/contacts", {
+      const res = await fetch("/.netlify/functions/contact", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await res.json();
 
+      const safeData = Array.isArray(data) ? data : [];
+
       if (prevContactsRef.current.length > 0) {
-        const diff = data.length - prevContactsRef.current.length;
+        const diff = safeData.length - prevContactsRef.current.length;
         if (diff > 0) {
           setNotificationCount((prev) => prev + diff);
         }
       }
 
-      prevContactsRef.current = data;
-      setContacts(data);
+      prevContactsRef.current = safeData;
+      setContacts(safeData);
     } catch (err) {
       console.log(err);
     }
   };
 
+  // =========================
+  // FETCH TEMPLATES
+  // =========================
   const fetchTemplates = async () => {
     try {
       const res = await fetch("/.netlify/functions/templates", {
@@ -97,7 +107,7 @@ const Admin = () => {
       });
 
       const data = await res.json();
-      setTemplates(data);
+      setTemplates(Array.isArray(data) ? data : []);
     } catch (err) {
       console.log(err);
     }
@@ -116,10 +126,13 @@ const Admin = () => {
     setCurrentPage(1);
   }, [search, usersPerPage]);
 
+  // =========================
+  // DELETE SUBSCRIBER (FIXED)
+  // =========================
   const handleDelete = async (id) => {
     if (!window.confirm("Delete subscriber?")) return;
 
-    await fetch(`/.netlify/functions/delete/${id}`, {
+    await fetch(`/.netlify/functions/subscribers?id=${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -127,10 +140,13 @@ const Admin = () => {
     fetchUsers();
   };
 
+  // =========================
+  // DELETE CONTACT (FIXED)
+  // =========================
   const deleteContact = async (id) => {
     if (!window.confirm("Delete message?")) return;
 
-    await fetch(`/.netlify/functions/contact/${id}`, {
+    await fetch(`/.netlify/functions/contact?id=${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -138,8 +154,11 @@ const Admin = () => {
     fetchContacts();
   };
 
+  // =========================
+  // TOGGLE IMPORTANT
+  // =========================
   const toggleImportant = async (id) => {
-    await fetch(`/.netlify/functions/contact/important/${id}`, {
+    await fetch(`/.netlify/functions/contact-important?id=${id}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -147,8 +166,11 @@ const Admin = () => {
     fetchContacts();
   };
 
+  // =========================
+  // MARK REPLIED
+  // =========================
   const markReplied = async (id) => {
-    await fetch(`/.netlify/functions/contact/replied/${id}`, {
+    await fetch(`/.netlify/functions/contact-replied?id=${id}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -156,6 +178,9 @@ const Admin = () => {
     fetchContacts();
   };
 
+  // =========================
+  // SEND TEMPLATE (FIXED)
+  // =========================
   const sendTemplate = async () => {
     if (!selectedTemplate) return showModal("Select template first", "error");
 
@@ -167,13 +192,19 @@ const Admin = () => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ templateName: selectedTemplate }),
+      body: JSON.stringify({
+        templateName: selectedTemplate,
+        subscribers: users, // ✅ send all users
+      }),
     });
 
     showModal("Template sent successfully 🚀");
     setLoading(false);
   };
 
+  // =========================
+  // EXPORT
+  // =========================
   const handleExport = async () => {
     try {
       const res = await fetch("https://travel-netlify.onrender.com/export", {
@@ -199,6 +230,9 @@ const Admin = () => {
     }
   };
 
+  // =========================
+  // SEND REPLY
+  // =========================
   const sendReply = async () => {
     if (!replyMessage) return showModal("Write message", "error");
 
@@ -221,6 +255,9 @@ const Admin = () => {
     fetchContacts();
   };
 
+  // =========================
+  // FILTER
+  // =========================
   const filteredUsers = users.filter((u) =>
     u.email.toLowerCase().includes(search.toLowerCase())
   );
