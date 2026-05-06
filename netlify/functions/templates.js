@@ -8,7 +8,8 @@ exports.handler = async () => {
     // 👉 List your template files here
     const templateFiles = [
       "offer.html",
-      "offer1.html"
+      "offer1.html",
+      "Diwali.html"
     ];
 
     const validTemplates = [];
