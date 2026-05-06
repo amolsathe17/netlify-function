@@ -51,7 +51,7 @@ const Admin = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("https://travel-netlify.onrender.com/subscribers", {
+      const res = await fetch("/.netlify/functions/subscribers", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -70,7 +70,7 @@ const Admin = () => {
 
   const fetchContacts = async () => {
     try {
-      const res = await fetch("https://travel-netlify.onrender.com/contacts", {
+      const res = await fetch("/.netlify/functions/contacts", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -92,7 +92,7 @@ const Admin = () => {
 
   const fetchTemplates = async () => {
     try {
-      const res = await fetch("https://travel-netlify.onrender.com/templates", {
+      const res = await fetch("/.netlify/functions/templates", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -119,7 +119,7 @@ const Admin = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete subscriber?")) return;
 
-    await fetch(`https://travel-netlify.onrender.com/delete/${id}`, {
+    await fetch(`/.netlify/functions/delete/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -130,7 +130,7 @@ const Admin = () => {
   const deleteContact = async (id) => {
     if (!window.confirm("Delete message?")) return;
 
-    await fetch(`https://travel-netlify.onrender.com/contact/${id}`, {
+    await fetch(`/.netlify/functions/contact/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -139,7 +139,7 @@ const Admin = () => {
   };
 
   const toggleImportant = async (id) => {
-    await fetch(`https://travel-netlify.onrender.com/contact/important/${id}`, {
+    await fetch(`/.netlify/functions/contact/important/${id}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -148,7 +148,7 @@ const Admin = () => {
   };
 
   const markReplied = async (id) => {
-    await fetch(`https://travel-netlify.onrender.com/contact/replied/${id}`, {
+    await fetch(`/.netlify/functions/contact/replied/${id}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -161,7 +161,7 @@ const Admin = () => {
 
     setLoading(true);
 
-    await fetch("https://travel-netlify.onrender.com/send-template", {
+    await fetch("/.netlify/functions/send-template", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -202,7 +202,7 @@ const Admin = () => {
   const sendReply = async () => {
     if (!replyMessage) return showModal("Write message", "error");
 
-    await fetch("https://travel-netlify.onrender.com/reply", {
+    await fetch("/.netlify/functions/reply", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
