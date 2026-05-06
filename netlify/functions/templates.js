@@ -1,42 +1,45 @@
+// netlify/functions/templates.js
+
 const fs = require("fs");
 const path = require("path");
 
 exports.handler = async () => {
   try {
-    // Correct path → inside deployed bundle
+    // ✅ Correct path for Netlify
     const templatesDir = path.join(__dirname, "../../public/templates");
 
-    console.log("Templates Dir:", templatesDir);
+    console.log("Reading templates from:", templatesDir);
 
-    // Check if folder exists
+    // If folder missing → return empty array (NOT error)
     if (!fs.existsSync(templatesDir)) {
       return {
         statusCode: 200,
-        body: JSON.stringify([]), // ✅ return empty array instead of error
+        body: JSON.stringify([]),
       };
     }
 
-    // Read files
+    // Read all files
     const files = fs.readdirSync(templatesDir);
 
-    // Filter only .html files
+    // Filter only HTML files
     const htmlFiles = files.filter((file) =>
       file.toLowerCase().endsWith(".html")
     );
 
+    // Optional: sort alphabetically
+    htmlFiles.sort();
+
     return {
       statusCode: 200,
-      body: JSON.stringify(htmlFiles), // ✅ always array
+      body: JSON.stringify(htmlFiles), // ✅ ALWAYS array
     };
 
   } catch (err) {
-    console.error("Templates Error:", err);
+    console.error("TEMPLATES ERROR:", err);
 
     return {
-      statusCode: 500,
-      body: JSON.stringify({
-        error: err.message,
-      }),
+      statusCode: 200, // ✅ still return array to prevent frontend crash
+      body: JSON.stringify([]),
     };
   }
 };
