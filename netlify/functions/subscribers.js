@@ -2,35 +2,80 @@ const { MongoClient, ObjectId } = require("mongodb");
 
 let client;
 
+const connectDB = async () => {
+  if (!process.env.MONGO_URI) {
+    throw new Error("MONGO_URI not set");
+  }
+
+  if (!client) {
+    client = new MongoClient(process.env.MONGO_URI);
+    await client.connect();
+  }
+
+  return client.db("travel");
+};
+
 exports.handler = async (event) => {
   try {
-    if (!process.env.MONGO_URI) {
-      throw new Error("MONGO_URI missing");
-    }
+    const db = await connectDB();
 
-    if (!client) {
-      client = new MongoClient(process.env.MONGO_URI);
-      await client.connect();
-    }
-
-    const db = client.db("travel");
-
-    // 👉 GET all subscribers
+    // =========================
+    // GET ALL SUBSCRIBERS
+    // =========================
     if (event.httpMethod === "GET") {
       const users = await db
         .collection("subscribers")
-        .find({})
+        .find()
         .sort({ createdAt: -1 })
         .toArray();
 
       return {
         statusCode: 200,
-        body: JSON.stringify(users),
+        body: JSON.stringify(users || []),
       };
     }
 
-    return { statusCode: 405, body: "Method not allowed" };
+    // =========================
+    // DELETE SUBSCRIBER ✅
+    // =========================
+    if (event.httpMethod === "DELETE") {
+      const id = event.queryStringParameters?.id;
+
+      if (!id) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: "ID required" }),
+        };
+      }
+
+      if (!ObjectId.isValid(id)) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: "Invalid ID" }),
+        };
+      }
+
+      const result = await db.collection("subscribers").deleteOne({
+        _id: new ObjectId(id),
+      });
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          message: "Subscriber deleted",
+          deletedCount: result.deletedCount,
+        }),
+      };
+    }
+
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: "Method not allowed" }),
+    };
+
   } catch (err) {
+    console.error("SUBSCRIBER ERROR:", err);
+
     return {
       statusCode: 500,
       body: JSON.stringify({ error: err.message }),
