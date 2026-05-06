@@ -3,7 +3,7 @@
 exports.handler = async () => {
   try {
     // 🔴 IMPORTANT: replace with your real domain
-    const BASE_URL = "https://amolsathe-function.netlify.app/"; 
+    const BASE_URL = "https://amolsathe-function.netlify.app"; 
 
     // 👉 List your template files here
     const templateFiles = [
