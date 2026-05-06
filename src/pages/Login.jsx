@@ -7,7 +7,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const res = await fetch("/.netlify/functions/admin/login", {
+      const res = await fetch("/.netlify/functions/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
