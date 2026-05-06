@@ -1,6 +1,5 @@
+
 const nodemailer = require("nodemailer");
-const fs = require("fs");
-const path = require("path");
 
 exports.handler = async (event) => {
   try {
@@ -13,38 +12,24 @@ exports.handler = async (event) => {
       };
     }
 
-    // =========================
-    // 📄 Load HTML template
-    // =========================
-    const templatePath = path.join(
-      __dirname,
-      "../../public/templates",
-      templateName
-    );
+    // 🔴 IMPORTANT: Replace with your domain
+    const BASE_URL = "https://amolsathe-function.netlify.app/";
 
-    if (!fs.existsSync(templatePath)) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ error: "Template not found" }),
-      };
-    }
+    // ✅ Fetch HTML template from public folder
+    const htmlContent = await fetch(
+      `${BASE_URL}/templates/${templateName}`
+    ).then((res) => res.text());
 
-    const htmlContent = fs.readFileSync(templatePath, "utf-8");
-
-    // =========================
-    // 📧 Gmail transporter
-    // =========================
+    // ✅ Gmail transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS, // App password
+        pass: process.env.EMAIL_PASS,
       },
     });
 
-    // =========================
     // 🚀 Send emails
-    // =========================
     for (let user of subscribers) {
       if (!user.email) continue;
 
