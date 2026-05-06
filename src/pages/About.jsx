@@ -56,7 +56,6 @@ export const About = () => {
 
       {/* OUR STORY */}
       <div className="container py-4 mx-auto px-4 grid grid-cols-1 md:grid-cols-2 items-center gap-12">
-        {/* LEFT CONTENT */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -66,7 +65,7 @@ export const About = () => {
             Our Story
           </h2>
 
-          <h2 className="text-4xl font-bold mb-4 text-gradient bg-linear-to-r from-teal-400 to-blue-500 text-transparent bg-clip-text block  md:hidden text-center">
+          <h2 className="text-4xl font-bold mb-4 text-gradient bg-linear-to-r from-teal-400 to-blue-500 text-transparent bg-clip-text block md:hidden text-center">
             Our Story
           </h2>
 
@@ -80,13 +79,6 @@ export const About = () => {
             From solo journeys to adventure tours, from family vacations to
             romantic escapes — we tailor every experience with care.
           </p>
-
-          {/* <motion.button
-      whileHover={{ scale: 1.05 }}
-      className="mt-6 bg-linear-to-r from-teal-400 to-blue-500 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-2xl"
-    >
-      Learn More
-    </motion.button> */}
         </motion.div>
 
         {/* RIGHT STATS */}
@@ -101,17 +93,13 @@ export const About = () => {
             value="10K+"
             icon={<Users size={32} />}
           />
-          {/* <Stat title="Destinations" value="80+" icon={<Plane size={32} />} /> */}
         </div>
       </div>
 
       <div className="relative bg-[url('https://images.unsplash.com/photo-1501785888041-af3ef285b470')] bg-cover bg-center text-white">
-        {/* Overlay */}
         <div className="absolute inset-0 bg-black/60"></div>
 
-        {/* Content */}
         <div className="relative z-10 container mx-auto px-4 py-6 text-center">
-          {/* Heading */}
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
             Why Choose Us
           </h2>
@@ -122,8 +110,7 @@ export const About = () => {
             us.
           </p>
 
-          {/* Features Grid */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 ">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4">
             {features.map((item, index) => (
               <div
                 key={index}
@@ -172,26 +159,40 @@ export const About = () => {
         </div>
       </section>
 
-      {/* 🆕 PARTNERS */}
-      <section className="max-w-7xl mx-auto px-4 py-4 mb-1">
-        {/* Heading */}
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-transparent bg-clip-text bg-linear-to-r from-blue-600 via-teal-500 to-purple-600">
+      {/* PARTNERS */}
+      <section className="max-w-7xl mx-auto px-4 py-6 mb-6 overflow-hidden">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-6 md:mb-8 text-transparent bg-clip-text bg-linear-to-r from-blue-600 via-teal-500 to-purple-600">
           Our Trusted Travel Partners
         </h2>
 
-        <div className="flex gap-10 overflow-x-auto no-scrollbar scroll-smooth px-2  text-center">
-          {partners.map((p, i) => (
-            <div
-              key={i}
-              className=" w-55 rounded-2xl p-1 flex items-center text-center transition-all duration-300"
-            >
-              <img
-                src={p.logo}
-                alt={p.name}
-                className="h-35 object-contain grayscale hover:grayscale-0 transition duration-300"
-              />
-            </div>
-          ))}
+        <div className="relative w-full overflow-hidden">
+          <div className="flex w-max animate-scroll gap-8">
+            {partners.map((p, i) => (
+              <div
+                key={`first-${i}`}
+                className="flex items-center justify-center min-w-30 sm:min-w-37.5"
+              >
+                <img
+                  src={p.logo}
+                  alt={p.name}
+                  className="h-16 sm:h-20 md:h-24 object-contain grayscale hover:grayscale-0 transition duration-300"
+                />
+              </div>
+            ))}
+
+            {partners.map((p, i) => (
+              <div
+                key={`second-${i}`}
+                className="flex items-center justify-center min-w-30 sm:min-w-37.5"
+              >
+                <img
+                  src={p.logo}
+                  alt={p.name}
+                  className="h-16 sm:h-20 md:h-24 object-contain grayscale hover:grayscale-0 transition duration-300"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -205,7 +206,6 @@ export const About = () => {
             />
 
             <motion.div className="relative bg-white p-8 rounded-2xl w-full max-w-md text-center">
-              {/* FIXED IMAGE */}
               <img
                 src={selectedTeam.img}
                 alt={selectedTeam.name}
@@ -233,7 +233,6 @@ export const About = () => {
   );
 };
 
-/* STAT COMPONENT */
 function Stat({ title, value, icon }) {
   return (
     <div className="bg-teal-100 p-6 rounded-xl text-center">

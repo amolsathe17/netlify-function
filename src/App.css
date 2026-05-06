@@ -31,8 +31,13 @@
 }
 
 @keyframes bounce-slow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
 }
 .animate-bounce-slow {
   animation: bounce-slow 0.5s ease-in-out;
@@ -42,16 +47,33 @@
   .btn {
     @apply inline-block font-medium text-center transition duration-150 ease-in-out border border-transparent rounded cursor-pointer;
   }
-  
+
   .btn-primary {
-    @apply bg-linear-to-r from-blue-400 to-orange-400 text-black py-1 px-1 rounded-xl shadow-lg hover:scale-105 transition-transform  ;
+    @apply bg-linear-to-r from-blue-400 to-orange-400 text-black py-1 px-1 rounded-xl shadow-lg hover:scale-105 transition-transform;
   }
-  
+
   .btn-secondary {
     @apply text-white bg-gray-600 hover:bg-gray-700 py-2 px-2 active:bg-gray-800;
   }
 
-    .btn-lightblue {
+  .btn-lightblue {
     @apply text-white bg-blue-300 hover:bg-blue-700 active:bg-blue-400;
+  }
+  @keyframes scroll {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-scroll {
+    animation: scroll 25s linear infinite;
+  }
+
+  /* Pause on hover (optional but recommended) */
+  .animate-scroll:hover {
+    animation-play-state: paused;
   }
 }
