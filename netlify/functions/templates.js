@@ -3,13 +3,12 @@
 exports.handler = async () => {
   try {
     // 🔴 IMPORTANT: replace with your real domain
-    const BASE_URL = "https://pumpkinpicturesllp.uk"; 
+    const BASE_URL = "https://amolsathe-function.netlify.app/"; 
 
     // 👉 List your template files here
     const templateFiles = [
       "offer.html",
-      "welcome.html",
-      "discount.html"
+      "offer1.html"
     ];
 
     const validTemplates = [];
