@@ -1,21 +1,25 @@
+// netlify/functions/contact.js
+
 const { MongoClient, ObjectId } = require("mongodb");
 
 let client;
 
+const connectDB = async () => {
+  if (!process.env.MONGO_URI) {
+    throw new Error("MONGO_URI not set in Netlify");
+  }
+
+  if (!client) {
+    client = new MongoClient(process.env.MONGO_URI);
+    await client.connect();
+  }
+
+  return client.db("travel");
+};
+
 exports.handler = async (event) => {
   try {
-    // 🔐 Check MongoDB URI
-    if (!process.env.MONGO_URI) {
-      throw new Error("MONGO_URI not set in Netlify");
-    }
-
-    // 🔌 Connect DB (reuse connection)
-    if (!client) {
-      client = new MongoClient(process.env.MONGO_URI);
-      await client.connect();
-    }
-
-    const db = client.db("travel");
+    const db = await connectDB();
 
     // =========================
     // ✅ 1. SAVE CONTACT (POST)
@@ -57,15 +61,67 @@ exports.handler = async (event) => {
     }
 
     // =========================
-    // ✅ 2. DELETE CONTACT
+    // ✅ 2. GET CONTACT(S)
+    // =========================
+    if (event.httpMethod === "GET") {
+      const id = event.queryStringParameters?.id;
+
+      // 👉 Get single contact
+      if (id) {
+        if (!ObjectId.isValid(id)) {
+          return {
+            statusCode: 400,
+            body: JSON.stringify({ error: "Invalid ID" }),
+          };
+        }
+
+        const contact = await db.collection("contacts").findOne({
+          _id: new ObjectId(id),
+        });
+
+        if (!contact) {
+          return {
+            statusCode: 404,
+            body: JSON.stringify({ error: "Contact not found" }),
+          };
+        }
+
+        return {
+          statusCode: 200,
+          body: JSON.stringify(contact),
+        };
+      }
+
+      // 👉 Get all contacts
+      const contacts = await db
+        .collection("contacts")
+        .find()
+        .sort({ createdAt: -1 })
+        .toArray();
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify(contacts || []),
+      };
+    }
+
+    // =========================
+    // ✅ 3. DELETE CONTACT
     // =========================
     if (event.httpMethod === "DELETE") {
-      const id = event.queryStringParameters.id;
+      const id = event.queryStringParameters?.id;
 
       if (!id) {
         return {
           statusCode: 400,
           body: JSON.stringify({ error: "ID required" }),
+        };
+      }
+
+      if (!ObjectId.isValid(id)) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: "Invalid ID" }),
         };
       }
 
@@ -79,10 +135,14 @@ exports.handler = async (event) => {
       };
     }
 
+    // =========================
+    // ❌ METHOD NOT ALLOWED
+    // =========================
     return {
       statusCode: 405,
-      body: "Method not allowed",
+      body: JSON.stringify({ error: "Method not allowed" }),
     };
+
   } catch (err) {
     console.error("CONTACT ERROR:", err);
 
