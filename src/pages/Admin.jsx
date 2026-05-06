@@ -207,7 +207,7 @@ const Admin = () => {
   // =========================
   const handleExport = async () => {
     try {
-      const res = await fetch("https://travel-netlify.onrender.com/export", {
+      const res = await fetch("/.netlify/functions/export", {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
